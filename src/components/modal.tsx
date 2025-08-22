@@ -342,8 +342,7 @@ export default function Modal({ onClose }: Props) {
     e.preventDefault();
 
     const locationData = { province, city, district };
-    setLocation(locationData);
-    localStorage.setItem("userLocation", JSON.stringify(locationData));
+    setLocation(locationData); // LocationContext를 통해 설정 (자동으로 localStorage에도 저장됨)
 
     try {
       setIsSaving(true);

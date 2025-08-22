@@ -1,13 +1,17 @@
 "use client";
 
+import { useLocation } from "@/contexts/LocationContext";
 import Image from "next/image";
 
 export default function Header() {
+  const { location } = useLocation();
+  const { province, city, district } = location;
+
   return (
     <header className="sticky w-full max-md:px-[11px] max-md:pt-[15px] p-3">
       <div className="w-full h-[40px] rounded-[5px] border-none bg-white drop-shadow flex items-center justify-between gap-2 p-2">
         <div className="flex items-center gap-1">
-          <div>안양시 동안구</div>
+          <div>{province && `${province}도`} {city && `${city}시`} {district && `${district}구`}</div>
           <div>|</div>
           <div>
             <Image
@@ -46,3 +50,4 @@ export default function Header() {
     </header>
   );
 }
+

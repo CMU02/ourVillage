@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useRef, useState } from "react";
 import { useView } from "@/contexts/ViewContext";
 import { useChat } from "@/contexts/ChatContext";
 
@@ -14,17 +14,34 @@ export default function Bottom({ placement }: Props) {
   const { setView } = useView();
   const { setLastInput, pushMessage } = useChat();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [isComposing, setIsComposing] = useState(false); // IME 조합 상태 추적
 
   const handleSend = () => {
     const value = inputRef.current?.value?.trim() ?? "";
     if (!value) return;
-    
-    console.log("전송된 메시지:", value);
-    setLastInput({id: Date.now(), text: value});
-    pushMessage({ role: "user", text: value});
+
+    setLastInput({ id: Date.now(), text: value });
+    pushMessage({ role: "user", text: value });
 
     if (inputRef.current) inputRef.current.value = "";
-    
+  };
+
+  // 한글 입력 시작
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  // 한글 입력 완료
+  const handleCompositionEnd = () => {
+    setIsComposing(false);
+  };
+
+  // 키 입력 처리
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !isComposing) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   return (
@@ -102,7 +119,9 @@ export default function Bottom({ placement }: Props) {
             ref={inputRef}
             type="text"
             className="w-full h-[40px] rounded-[5px] border-none bg-white px-2 py-1 drop-shadow text-black"
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            onKeyDown={handleKeyDown}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
             placeholder="궁금한 내용을 입력해주세요."
           />
           <button

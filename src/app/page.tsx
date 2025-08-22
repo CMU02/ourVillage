@@ -9,7 +9,6 @@ import Modal from "@/components/modal";
 import { ViewProvider, useView } from "@/contexts/ViewContext";
 import { LocationProvider } from "@/contexts/LocationContext";
 import { ChatProvider } from "@/contexts/ChatContext";
-import Chat from "@/components/chat";
 
 function FooterContainer() {
   const { view } = useView();
@@ -58,7 +57,7 @@ export default function Home() {
 
             <MainContainer />
 
-            <footer className="sticky z-20">
+            <footer className="sticky bottom-0 z-20">
               <FooterContainer />
             </footer>
 

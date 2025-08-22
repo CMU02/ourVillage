@@ -1,7 +1,8 @@
 "use client";
-import { Map, MapMarker } from "react-kakao-maps-sdk";
+import { CustomOverlayMap, Map, MapInfoWindow, MapMarker } from "react-kakao-maps-sdk";
 import { useView } from "@/contexts/ViewContext";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { InfoWindow } from "@react-google-maps/api";
 
 type Props = { onClose: () => void };
 
@@ -19,6 +20,8 @@ function isDefaultCenter(c?: { lat: number; lng: number } | null) {
 export default function KakaoMap({ onClose }: Props) {
   const { view, mapData, setMapData } = useView();
   const mapRef = useRef<kakao.maps.Map | null>(null);
+
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
   const [userCenter, setUserCenter] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -131,10 +134,11 @@ export default function KakaoMap({ onClose }: Props) {
         style={{ width: "100%", height: "100%" }}
         level={7}
         onCreate={(map) => (mapRef.current = map)}
+        onClick={() => setActiveIdx(null)}
       >
         {mapData?.markers?.map((m, i) => (
-          <MapMarker
-            key={i}
+          <Fragment key={`${m.lat}-${m.lng}-${i}`}>
+            <MapMarker
             position={{ lat: m.lat, lng: m.lng }}
             image={{
               src: iconSrc,
@@ -142,7 +146,30 @@ export default function KakaoMap({ onClose }: Props) {
               options: { offset: { x: 20, y: 40 } },
             }}
             title={m.title ?? ""}
-          />
+            onClick={() => {
+              if(mapData.kind !== "bus"){
+              {setActiveIdx(i)}}
+            }}
+            clickable={mapData.kind !=="bus"}
+            />
+              {activeIdx === i && (
+                <CustomOverlayMap position={{ lat: m.lat, lng: m.lng }} yAnchor={0}>
+                  <div className="w-64 rounded-lg bg-white shadow-lg overflow-hidden">
+
+
+                    {/* 텍스트 영역 */}
+                    <div className="p-2">
+                      <div className="flex justify-start items-end">
+                        <div className="font-bold text-base truncate">{m.title}</div>
+                        <div className="px-1 text-gray-500 text-sm truncate">{m.industry}</div>
+                      </div>
+                      <div className="text-xs text-gray-600 truncate">{m.address}</div>
+                    </div>
+
+                  </div>
+                </CustomOverlayMap>
+              )}
+          </Fragment>
         ))}
       </Map>
     </div>

@@ -105,12 +105,14 @@ export default function Chat() {
         // 지도 데이터 후보
         else if (intent === "local_currency") {
           const rawStores = res?.meta?.topStores ?? [];
+          console.log(rawStores)
           const markers = (Array.isArray(rawStores) ? rawStores : [])
             .map((s: any) => ({
               lat: parseFloat(String(s.lat)),
               lng: parseFloat(String(s.lng)),
               title: s?.name,
               address: s?.address,
+              industry: s?.industry,
             }))
             .filter((m) => Number.isFinite(m.lat) && Number.isFinite(m.lng));
 

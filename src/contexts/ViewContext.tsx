@@ -6,11 +6,24 @@ export type Intent = "general" | "local_currency" | "bus";
 
 export type View = "chat" | "map" | "localCurrency" | "bus";
 
+// 차후 MapData 에서 localCurrencyMarker 와 BusMarker 따로 생성 고려
 export type MarkerData = {
   lat: number;
   lng: number;
   title: string;
   address?: string;
+
+  // 지역화폐 전용
+  industry?: string;
+
+  // 버스 전용
+  meta?: {
+    vehId: string;
+    busType?: string;
+    congetion?: string;
+    isFull?: boolean;
+    dataTm?: string;
+  };
 };
 
 type MapData = {

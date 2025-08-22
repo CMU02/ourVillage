@@ -41,7 +41,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* 애니메이션 설정 */
+/* 지도 애니메이션 설정 */
 .panel-initial {
   transform: translateY(100%);
   will-change: transform;
@@ -71,4 +71,35 @@ body {
 }
 .play-down {
   animation: mapDown 480ms ease-in forwards;
+}
+
+/* 챗봇 대기 애니메이션 설정 */
+@keyframes bounce {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-18px);
+  }
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background-color: #4b5563; /* gray-700 */
+  border-radius: 9999px;
+  display: inline-block;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.dot1 {
+  animation-delay: 0s;
+}
+.dot2 {
+  animation-delay: 0.15s;
+}
+.dot3 {
+  animation-delay: 0.3s;
 }

@@ -6,6 +6,7 @@ import { useView } from "@/contexts/ViewContext";
 import { useChat } from "@/contexts/ChatContext";
 import { useLocalCurrencyGuard } from "@/hooks/localCurrencyGuard";
 import { useBusGuard } from "@/hooks/busGuard";
+import { useServiceComingSoonGuard } from "@/hooks/useServiceComingSoonGuard";
 
 // Chat : Map 여부에 따른 Placement 위치 수정
 type Props = {
@@ -56,7 +57,13 @@ export default function Bottom({ placement }: Props) {
     pushMessage,
     setView,
     focusInput: () => inputRef.current?.focus(),
-  })
+  });
+
+  const handleServiceComingSoon = useServiceComingSoonGuard({
+    pushMessage,
+    setView,
+    focusInput: () => inputRef.current?.focus(),
+  });
 
   return (
     <footer
@@ -113,6 +120,7 @@ export default function Bottom({ placement }: Props) {
 
             <button
               type="button"
+              onClick={handleServiceComingSoon}
               className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#D88866]"
             >
               <Image

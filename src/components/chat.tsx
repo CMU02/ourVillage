@@ -47,7 +47,7 @@ export default function Chat() {
               const geoData = JSON.parse(userLocationGeo);
               coords = {
                 nx: geoData.grid_x,
-                ny: geoData.grid_y
+                ny: geoData.grid_y,
               };
             } catch (error) {
               console.error("좌표 정보 파싱 오류:", error);
@@ -57,7 +57,7 @@ export default function Chat() {
 
         const res = await askChatBot({
           userQuestion: text,
-          options: coords ? { coords } : undefined
+          options: coords ? { coords } : undefined,
         });
         if (aborted) return;
 
@@ -128,7 +128,7 @@ export default function Chat() {
         if (!aborted)
           pushMessage({
             role: "bot",
-            text: "죄송해요, 다른 질문을 해주세요..",
+            text: "제가 포함하고 있지 않은 정보인 것 같아요, 버스/지역화폐/날씨와 같은 질문을 해보세요!",
           });
         console.error(e);
       } finally {
@@ -165,20 +165,30 @@ export default function Chat() {
   if (view === "localCurrency") {
     return (
       <div className="w-full backdrop-blur px-3 py-2">
-        <div className="flex flex-col gap-1 text-sm">
+        <div className="flex flex-col gap-1">
           <div className="flex justify-end">
-            <div className="max-w-[80%] px-3 py-1 rounded bg-blue-500 text-white">
+            <div
+              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-[#57EA97] text-white rounded-[5px] text-sm`}
+            >
               {lastUser}
             </div>
           </div>
           <div className="flex justify-start">
-            <div className="max-w-[80%] px-3 py-1 rounded bg-gray-200 text-gray-900">
+            <div
+              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-gray-200 text-black rounded-[5px] text-sm`}
+            >
               {lastBot}
             </div>
           </div>
           {(waiting || loading) && (
-            <div className="text-center text-gray-400 mt-1" aria-live="polite">
-              챗봇이 질문 생성하는 중...
+            <div className="flex justify-start">
+              <div className="max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-gray-200 text-black rounded-[5px]">
+                <div className="flex items-end gap-1 h-5">
+                  <span className="dot dot1" />
+                  <span className="dot dot2" />
+                  <span className="dot dot3" />
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -189,20 +199,30 @@ export default function Chat() {
   if (view === "bus") {
     return (
       <div className="w-full backdrop-blur px-3 py-2">
-        <div className="flex flex-col gap-1 text-sm">
+        <div className="flex flex-col gap-1">
           <div className="flex justify-end">
-            <div className="max-w-[80%] px-3 py-1 rounded bg-blue-500 text-white">
+            <div
+              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-[#57EA97] text-white rounded-[5px] text-sm`}
+            >
               {lastUser}
             </div>
           </div>
           <div className="flex justify-start">
-            <div className="max-w-[80%] px-3 py-1 rounded bg-gray-200 text-gray-900">
+            <div
+              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-gray-200 text-black rounded-[5px] text-sm`}
+            >
               {lastBot}
             </div>
           </div>
           {(waiting || loading) && (
-            <div className="text-center text-gray-400 mt-1" aria-live="polite">
-              챗봇이 질문 생성하는 중...
+            <div className="flex justify-start">
+              <div className="max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-gray-200 text-black rounded-[5px]">
+                <div className="flex items-end gap-1 h-5">
+                  <span className="dot dot1" />
+                  <span className="dot dot2" />
+                  <span className="dot dot3" />
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -215,7 +235,7 @@ export default function Chat() {
     <div className="w-full h-full">
       <div className="flex flex-col gap-2 p-3">
         {messages.length === 0 && !loading && (
-          <div className="text-center text-gray-500">
+          <div className="flex items-center justify-center text-center text-2xl font-semibold text-black">
             우리 동네 궁금증을 해소하세요!
           </div>
         )}
@@ -228,10 +248,11 @@ export default function Chat() {
             }`}
           >
             <div
-              className={`max-w-[70%] px-3 py-2 rounded shadow text-sm ${m.role === "user"
-                ? "bg-blue-500 text-white rounded-br-none"
-                : "bg-gray-200 text-black rounded-bl-none"
-                }`}
+              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line text-sm ${
+                m.role === "user"
+                  ? "bg-[#57EA97] text-white rounded-[5px]"
+                  : "bg-gray-200 text-black rounded-[5px]"
+              }`}
             >
               {m.text}
             </div>
@@ -239,8 +260,14 @@ export default function Chat() {
         ))}
 
         {loading && (
-          <div className="text-center text-gray-400">
-            챗봇이 질문 생성하는 중...
+          <div className="flex justify-start">
+            <div className="max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-gray-200 text-black rounded-[5px]">
+              <div className="flex items-end gap-1 h-5">
+                <span className="dot dot1" />
+                <span className="dot dot2" />
+                <span className="dot dot3" />
+              </div>
+            </div>
           </div>
         )}
       </div>

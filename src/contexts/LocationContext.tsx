@@ -45,7 +45,6 @@ export function LocationProvider({ children }: { children: ReactNode }) {
             district: info.district,
           });
           setHasLocation(true);
-          console.log("위치 정보 로드 완료:", info);
         } catch (error) {
           console.error("로컬스토리지 위치 정보 파싱 오류:", error);
         }

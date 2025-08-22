@@ -39,11 +39,9 @@ export default function Home() {
   // ✅ villageCheck: true면 모달 숨김, false면 모달 표시
   // localStorage에 userLocation이 없을 때만 false로 시작
   const [villageCheck, setVillageCheck] = useState<boolean>(true); // 초기값은 항상 true로 설정
-  const [isClient, setIsClient] = useState(false);
 
   // 클라이언트에서만 localStorage 확인
   useEffect(() => {
-    setIsClient(true);
     const saved = localStorage.getItem("userLocation");
     setVillageCheck(!!saved);
   }, []);

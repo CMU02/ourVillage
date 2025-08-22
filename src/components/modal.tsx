@@ -153,7 +153,7 @@ export default function Modal({ onClose }: Props) {
         setCityGu(gu);
         setDistrict(firstDistrict);
       } catch (err: unknown) {
-        if ((err as any)?.name === "AbortError") return;
+        if (err instanceof Error && err.name === "AbortError") return;
         setErrorMsg(
           err instanceof Error
             ? `위치 데이터를 불러오지 못했어요: ${err.message}`

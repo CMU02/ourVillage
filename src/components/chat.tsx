@@ -75,7 +75,16 @@ export default function Chat() {
           const rawBuses = res?.meta?.busPositions ?? [];
           // console.log(rawBuses);    // 디버그용 코드
           const markers = (Array.isArray(rawBuses) ? rawBuses : [])
-            .map((b: any) => {
+            .map((b: {
+              gpsY?: string | number;
+              gpsX?: string | number;
+              vehId?: string;
+              busType?: string;
+              congetion?: string;
+              plainNo?: string;
+              isFullFlag?: string;
+              dataTm?: string;
+            }) => {
               const lat = parseFloat(String(b?.gpsY)); // 위도
               const lng = parseFloat(String(b?.gpsX)); // 경도
               return {
@@ -83,12 +92,12 @@ export default function Chat() {
                 lng,
                 title: b?.vehId ?? "버스",
                 meta: {
-                  vehId: b?.vehId,
-                  busType: b?.busType,
-                  congetion: b?.congetion,
-                  plainNo: b?.plainNo,
+                  vehId: b?.vehId ?? "",
+                  busType: b?.busType ?? "",
+                  congetion: b?.congetion ?? "",
+                  plainNo: b?.plainNo ?? "",
                   isFull: b?.isFullFlag === "1",
-                  dataTm: b?.dataTm,
+                  dataTm: b?.dataTm ?? "",
                 },
               };
             })
@@ -109,12 +118,18 @@ export default function Chat() {
           const rawStores = res?.meta?.topStores ?? [];
           // console.log(rawStores) // 디버그용 콘솔
           const markers = (Array.isArray(rawStores) ? rawStores : [])
-            .map((s: any) => ({
+            .map((s: {
+              lat?: string | number;
+              lng?: string | number;
+              name?: string;
+              address?: string;
+              industry?: string;
+            }) => ({
               lat: parseFloat(String(s.lat)),
               lng: parseFloat(String(s.lng)),
-              title: s?.name,
-              address: s?.address,
-              industry: s?.industry,
+              title: s?.name ?? "",
+              address: s?.address ?? "",
+              industry: s?.industry ?? "",
             }))
             .filter((m) => Number.isFinite(m.lat) && Number.isFinite(m.lng));
 
@@ -141,7 +156,7 @@ export default function Chat() {
     return () => {
       aborted = true;
     };
-  }, [lastInput, pushMessage, setLastInput, setView, setMapData]);
+  }, [lastInput, pushMessage, setLastInput, setView, setMapData, setIntent]);
 
   // ===== 요약(최근 1줄) 계산 + 로딩표시 여부 =====
   const { lastUser, lastBot, waiting } = useMemo(() => {
@@ -243,16 +258,14 @@ export default function Chat() {
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`flex ${
-              m.role === "user" ? "justify-end" : "justify-start"
-            }`}
+            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"
+              }`}
           >
             <div
-              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line text-sm ${
-                m.role === "user"
-                  ? "bg-[#1dcc69] text-white rounded-[5px]"
-                  : "bg-gray-200 text-black rounded-[5px]"
-              }`}
+              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line text-sm ${m.role === "user"
+                ? "bg-[#1dcc69] text-white rounded-[5px]"
+                : "bg-gray-200 text-black rounded-[5px]"
+                }`}
             >
               {m.text}
             </div>

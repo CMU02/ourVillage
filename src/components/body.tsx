@@ -2,6 +2,7 @@ import Chat from "./chat";
 import KakaoMap from "./kakaoMap";
 import Bottom from "./footer";
 import { useView } from "@/contexts/ViewContext";
+import Modal from "./modal";
 
 export default function Body() {
   const { view } = useView();

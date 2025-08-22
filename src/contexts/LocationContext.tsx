@@ -31,17 +31,16 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     const loadLocationFromStorage = () => {
       const userLocationInfo = localStorage.getItem("userLocation");
       const userLocationGeo = localStorage.getItem("userLocationGeo");
-      
-      console.log("로컬스토리지 확인:", { userLocationInfo, userLocationGeo });
-      
+
       if (userLocationInfo) {
         try {
           const info = JSON.parse(userLocationInfo) as {
+            province?: string;
             city: string;
             district: string;
           };
           setLocation({
-            province: "", // 필요시 추가
+            province: info.province || "",
             city: info.city,
             district: info.district,
           });
@@ -51,7 +50,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
           console.error("로컬스토리지 위치 정보 파싱 오류:", error);
         }
       }
-      
+
       // 지오 정보 확인
       if (userLocationGeo) {
         setHasGeoData(true);
@@ -67,8 +66,9 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     setLocation(loc);
     setHasLocation(true);
 
-    // 로컬스토리지에 저장
+    // 로컬스토리지에 저장 (province 포함)
     const locationInfo = {
+      province: loc.province,
       city: loc.city,
       district: loc.district,
     };

@@ -15,9 +15,19 @@ export default function Modal({ onClose }: Props) {
   const [city, setCity] = useState("안양");
   const [district, setDistrict] = useState("동안");
 
+  const location = {    // location 을 json 으로 변환
+    province,
+    city,
+    district
+  }
+
+  let locationStr = JSON.stringify(location)
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setLocation({ province, city, district }); // 🔥 Context 업데이트
+    setLocation({ province, city, district }); // Context 업데이트
+    
+    window.localStorage.setItem("location", locationStr);   // localStorage에 저장
     onClose?.(); // 모달 닫기
   }
 

@@ -74,7 +74,6 @@ export default function Bottom({ placement }: Props) {
 
             <button
               type="button"
-              onClick={() => setView("map")}
               className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#D88866]"
             >
               <Image

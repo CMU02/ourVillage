@@ -51,7 +51,7 @@ export default function Home() {
             <FooterContainer />
           </footer>
 
-          {/* ⬇️ villageCheck가 false일 때 전체 화면을 덮는 오버레이 */}
+          {/* villageCheck가 false일 때 전체 화면을 덮는 오버레이 */}
           {!villageCheck && (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/45"

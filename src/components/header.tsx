@@ -2,26 +2,20 @@
 
 import { useLocation } from "@/contexts/LocationContext";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { UltraShortItem, UltraShortResponse } from "@/types/weather.types";
-
-const WEATHER_API_PATH =
-  "https://server.cieloblu.co.kr/weather/ultra-short-forecast";
+import { useMemo } from "react";
+import { useWeather } from "@/hooks/useWeather";
+import { getKrTime } from "@/utils/krTime";
 
 export default function Header() {
-  const { location, hasLocation, hasGeoData } = useLocation();
-  const [weatherInfo, setWeatherInfo] = useState<UltraShortItem[]>([]); // 날씨 정보
+  const { location, hasLocation } = useLocation();
 
-  /**
-   * 날씨API 호출하여 날씨 데이터 가져오는 함수 
-   */
-  const fetchWeather = async () => {
+  // 날씨 API 매개변수 계산
+  const weatherParams = useMemo(() => {
+    // 클라이언트 사이드에서만 localStorage 접근
+    if (typeof window === "undefined") return null;
+
     const userLocationGeo = localStorage.getItem("userLocationGeo");
-    if (!userLocationGeo) {
-      console.warn("날씨 정보를 가져올 수 없습니다: userLocationGeo가 없습니다.");
-      return;
-    }
+    if (!userLocationGeo) return null;
 
     try {
       const { grid_x: nx, grid_y: ny } = JSON.parse(userLocationGeo) as {
@@ -43,69 +37,31 @@ export default function Header() {
         baseDate = kstTime.toISOString().slice(0, 10).replace(/-/g, "");
       }
 
-      console.log("날씨 API 호출:", { nx, ny, baseDate, baseTime });
-
-      const { data } = await axios.get<UltraShortResponse>(WEATHER_API_PATH, {
-        params: {
-          nx,
-          ny,
-          base_date: baseDate,
-          base_time: baseTime,
-        },
-      });
-
-      console.log("날씨 API 응답:", data);
-      setWeatherInfo(data.response.body.items.item);
+      return { nx, ny, baseDate, baseTime };
     } catch (error) {
-      console.error("날씨 정보 가져오기 실패:", error);
+      console.error("지오 정보 파싱 오류:", error);
+      return null;
     }
+  }, [hasLocation]); // hasLocation이 변경될 때마다 재계산
+
+  // React Query를 사용한 날씨 데이터 가져오기
+  const { data: weatherInfo = [], isLoading, error } = useWeather(weatherParams);
+
+  // 온도 표시 로직
+  const getTemperatureDisplay = () => {
+    if (isLoading) return "로딩중...";
+    if (error) return "오류";
+
+    const t1hItems = weatherInfo.filter((i) => i.category === "T1H");
+    if (!t1hItems.length) return "데이터 없음";
+
+    const krTime = Number(getKrTime());
+    const closest = t1hItems
+      .filter((i) => Number(i.fcstTime) <= krTime)
+      .sort((a, b) => Number(b.fcstTime) - Number(a.fcstTime))[0];
+
+    return closest ? `${closest.fcstValue}°C` : "데이터 없음";
   };
-
-  const getKrTime = () => {
-    const now = new Date();
-    const kstTime = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Seoul" })
-    );
-    const hours = kstTime.getHours();
-    const minutes = kstTime.getMinutes();
-
-    // 현재 시간보다 이전의 가장 가까운 30분 단위 시간 계산
-    let baseHour = hours;
-    let baseMinute = 30;
-
-    // 현재 분이 30분 미만이면 이전 시간의 30분으로 설정
-    if (minutes < 30) {
-      baseHour = hours - 1;
-      baseMinute = 30;
-
-      // 0시 30분 미만인 경우 전날 23시 30분으로 설정
-      if (baseHour < 0) {
-        baseHour = 23;
-      }
-    }
-
-    const baseTime = `${String(baseHour).padStart(2, "0")}${String(baseMinute).padStart(2, "0")}`;
-    return baseTime;
-  };
-
-  useEffect(() => {
-    // 컴포넌트 마운트 시 즉시 날씨 정보 가져오기 시도
-    fetchWeather();
-  }, []); // 컴포넌트 마운트 시 한 번만 실행
-
-  useEffect(() => {
-    // 위치 정보가 변경될 때마다 날씨 정보를 다시 가져옴
-    if (hasLocation) {
-      fetchWeather();
-    }
-  }, [hasLocation]); // hasLocation이 변경될 때마다 실행
-
-  useEffect(() => {
-    // 지오 정보가 업데이트될 때마다 날씨 정보를 다시 가져옴
-    if (hasGeoData) {
-      fetchWeather();
-    }
-  }, [hasGeoData]); // hasGeoData가 변경될 때마다 실행
 
   return (
     <header className="sticky w-full max-md:px-[11px] max-md:pt-[15px] p-3">
@@ -131,17 +87,7 @@ export default function Header() {
 
           {/* 온도 표시: 로딩/에러/정상 */}
           <div>
-            {(() => {
-              const t1hItems = weatherInfo.filter((i) => i.category === "T1H");
-              if (!t1hItems.length) return "데이터 없음";
-              const krTime = Number(getKrTime());
-
-              // 현재 시간보다 작거나 같은 fcstTime 중에서 가장 큰 값
-              const closest = t1hItems
-                .filter((i) => Number(i.fcstTime) <= krTime)
-                .sort((a, b) => Number(b.fcstTime) - Number(a.fcstTime))[0];
-              return closest ? `${closest.fcstValue}°C` : "데이터 없음";
-            })()}
+            {getTemperatureDisplay()}
           </div>
         </div>
 

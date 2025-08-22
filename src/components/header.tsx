@@ -38,11 +38,17 @@ export default function Header() {
   }, [hasLocation, hasGeoData]); // hasLocation과 hasGeoData가 변경될 때마다 재계산
 
   // React Query를 사용한 날씨 데이터 가져오기
-  const { data: weatherInfo = [], isLoading, error } = useWeather(weatherParams);
+  const {
+    data: weatherInfo = [],
+    isLoading,
+    error,
+  } = useWeather(weatherParams);
 
   const getClosestItme = (item: UltraShortItem[]) => {
     const kstParts = getKstParts(new Date());
-    const krTime = Number(`${kstParts.hour.padStart(2, '0')}${kstParts.minute.padStart(2, '0')}`);
+    const krTime = Number(
+      `${kstParts.hour.padStart(2, "0")}${kstParts.minute.padStart(2, "0")}`
+    );
 
     // console.log('getClosestItme Debug:', {
     //   krTime,
@@ -56,22 +62,26 @@ export default function Header() {
     if (filteredItems.length === 0) {
       // console.log('No items found <= current time, returning earliest future item');
       // 현재 시간보다 이후의 데이터만 있다면 가장 이른 시간의 데이터 반환
-      const earliestItem = item.sort((a, b) => Number(a.fcstTime) - Number(b.fcstTime))[0];
+      const earliestItem = item.sort(
+        (a, b) => Number(a.fcstTime) - Number(b.fcstTime)
+      )[0];
       // console.log('Selected earliest future item:', earliestItem);
       return earliestItem;
     }
 
-    const result = filteredItems.sort((a, b) => Number(b.fcstTime) - Number(a.fcstTime))[0];
+    const result = filteredItems.sort(
+      (a, b) => Number(b.fcstTime) - Number(a.fcstTime)
+    )[0];
     // console.log('Selected item:', result);
 
     return result;
-  }
+  };
 
   // 온도 표시 로직
   const getTemperatureDisplay = () => {
     if (isLoading) return "로딩중...";
     if (error) {
-      console.error('Weather error:', error);
+      console.error("Weather error:", error);
       return "오류";
     }
 
@@ -88,7 +98,7 @@ export default function Header() {
     if (isLoading || error || !weatherInfo.length) {
       return {
         icon: "/icons/sunny.svg",
-        description: "날씨"
+        description: "날씨",
       };
     }
 
@@ -96,7 +106,9 @@ export default function Header() {
     const precipitationItems = weatherInfo.filter((i) => i.category === "PTY");
 
     const skyItem = skyItems.length ? getClosestItme(skyItems) : undefined;
-    const precipitationItem = precipitationItems.length ? getClosestItme(precipitationItems) : undefined;
+    const precipitationItem = precipitationItems.length
+      ? getClosestItme(precipitationItems)
+      : undefined;
 
     return getWeatherCondition({ skyItem, precipitationItem });
   };
@@ -110,11 +122,13 @@ export default function Header() {
           {/* 위치 표시 영역 */}
           <div>
             {typeof window !== "undefined" && hasLocation
-              ? `${location.city} ${location.district}`
+              ? location.city || location.district
+                ? `${location.city ?? ""} ${location.district ?? ""}`.trim()
+                : location.province ?? "사용자 위치 지정"
               : "사용자 위치 지정"}
           </div>
 
-          <div></div>
+          <div>|</div>
           <div>
             <Image
               src={weatherDisplay.icon}
@@ -126,9 +140,7 @@ export default function Header() {
           </div>
 
           {/* 온도 표시: 로딩/에러/정상 */}
-          <div>
-            {getTemperatureDisplay()}
-          </div>
+          <div>{getTemperatureDisplay()}</div>
         </div>
 
         <div className="flex items-center gap-1">

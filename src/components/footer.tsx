@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
+import Modal from "@/components/modal"; // ✅ 모달 컴포넌트 import
 import { useView } from "@/contexts/ViewContext";
 import { useChat } from "@/contexts/ChatContext";
 import { useLocalCurrencyGuard } from "@/hooks/localCurrencyGuard";
 import { useBusGuard } from "@/hooks/busGuard";
+import { useServiceComingSoonGuard } from "@/hooks/useServiceComingSoonGuard";
 
-// Chat : Map 여부에 따른 Placement 위치 수정
 type Props = {
   placement: "footer" | "inline"; // footer: 하단 고정, inline: Body 상단
 };
@@ -16,7 +17,8 @@ export default function Bottom({ placement }: Props) {
   const { setView } = useView();
   const { setLastInput, pushMessage } = useChat();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [isComposing, setIsComposing] = useState(false); // IME 조합 상태 추적
+  const [isComposing, setIsComposing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // ✅ 모달 상태
 
   const handleSend = () => {
     const value = inputRef.current?.value?.trim() ?? "";
@@ -28,17 +30,9 @@ export default function Bottom({ placement }: Props) {
     if (inputRef.current) inputRef.current.value = "";
   };
 
-  // 한글 입력 시작
-  const handleCompositionStart = () => {
-    setIsComposing(true);
-  };
+  const handleCompositionStart = () => setIsComposing(true);
+  const handleCompositionEnd = () => setIsComposing(false);
 
-  // 한글 입력 완료
-  const handleCompositionEnd = () => {
-    setIsComposing(false);
-  };
-
-  // 키 입력 처리
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !isComposing) {
       e.preventDefault();
@@ -56,103 +50,124 @@ export default function Bottom({ placement }: Props) {
     pushMessage,
     setView,
     focusInput: () => inputRef.current?.focus(),
-  })
+  });
+
+  const handleServiceComingSoon = useServiceComingSoonGuard({
+    pushMessage,
+    setView,
+    focusInput: () => inputRef.current?.focus(),
+  });
 
   return (
-    <footer
-      className={[
-        "w-full",
-        placement === "footer" ? "sticky bottom-0" : "",
-        "p-3 max-md:px-[11px] max-md:pb-[25px]",
-      ].join(" ")}
-    >
-      <div className="w-full">
-        {/* 가로 스크롤 영역 */}
-        <div
-          className="
-            mb-[5px]
-            overflow-x-auto overflow-y-hidden
-            px-1
-            [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
-            touch-pan-x
-          "
-          role="tablist"
-          aria-label="actions"
-        >
-          {/* 서비스 목록 */}
-          <div className="inline-flex min-w-max gap-2">
-            <button
-              type="button"
-              onClick={handleLocalCurrencyGuard}
-              className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#005DAB]"
-            >
-              <Image
-                src="/icons/gyeonggi.svg"
-                alt="지역화폐"
-                width={15}
-                height={15}
-                className="object-contain"
-              />
-              경기지역화폐 가맹점
-            </button>
+    <>
+      {/* ✅ 모달 조건부 렌더링 */}
+      {isModalOpen && <Modal onClose={() => setIsModalOpen(false)} />}
 
-            <button
-              type="button"
-              onClick={handleBusGuard}
-              className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#FFD8A8]"
-            >
-              <Image
-                src="/icons/bus.svg"
-                alt="버스 정류장"
-                width={15}
-                height={15}
-                className="object-contain"
-              />
-              우리 동네 버스 정류장
-            </button>
+      <footer
+        className={[
+          "w-full",
+          placement === "footer" ? "sticky bottom-0" : "",
+          "p-3 max-md:px-[11px] max-md:pb-[25px]",
+        ].join(" ")}
+      >
+        <div className="w-full">
+          {/* 서비스 버튼 목록 */}
+          <div
+            className="mb-[5px] overflow-x-auto overflow-y-hidden px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden touch-pan-x"
+            role="tablist"
+            aria-label="actions"
+          >
+            <div className="inline-flex min-w-max gap-2">
+              <button
+                type="button"
+                onClick={handleLocalCurrencyGuard}
+                className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#005DAB]"
+              >
+                <Image
+                  src="/icons/gyeonggi.svg"
+                  alt="지역화폐"
+                  width={15}
+                  height={15}
+                  className="object-contain"
+                />
+                경기지역화폐 가맹점
+              </button>
 
+              <button
+                type="button"
+                onClick={handleBusGuard}
+                className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#FFD8A8]"
+              >
+                <Image
+                  src="/icons/bus.svg"
+                  alt="버스 정보"
+                  width={15}
+                  height={15}
+                  className="object-contain"
+                />
+                우리 동네 버스 정보
+              </button>
+
+              <button
+                type="button"
+                onClick={handleServiceComingSoon}
+                className="flex items-center gap-1 generalBtn shrink-0 bg-[#D88866]"
+              >
+                <Image
+                  src="/icons/service.svg"
+                  alt="서비스 준비중"
+                  width={15}
+                  height={15}
+                  className="object-contain"
+                />
+                더 많은 서비스 준비중
+              </button>
+
+              {/* 설정 버튼 */}
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center gap-1 generalBtn shrink-0 bg-[#33333380]"
+              >
+                <Image
+                  src="/icons/setting.svg"
+                  alt="설정"
+                  width={15}
+                  height={15}
+                  className="object-contain"
+                />
+                설정
+              </button>
+            </div>
+          </div>
+
+          {/* 입력창 */}
+          <div className="relative">
+            <input
+              ref={inputRef}
+              type="text"
+              className="w-full h-[40px] rounded-[5px] border-none bg-white px-2 py-1 drop-shadow text-black"
+              onKeyDown={handleKeyDown}
+              onCompositionStart={handleCompositionStart}
+              onCompositionEnd={handleCompositionEnd}
+              placeholder="궁금한 내용을 입력해주세요."
+            />
             <button
-              type="button"
-              className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#D88866]"
+              onClick={handleSend}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              aria-label="send"
             >
               <Image
-                src="/icons/service.svg"
-                alt="서비스 준비중"
-                width={15}
-                height={15}
+                src="/icons/input.svg"
+                alt="send"
+                width={24}
+                height={24}
                 className="object-contain"
               />
-              더 많은 서비스 준비중
             </button>
           </div>
         </div>
-
-        {/* 입력창 */}
-        <div className="relative">
-          <input
-            ref={inputRef}
-            type="text"
-            className="w-full h-[40px] rounded-[5px] border-none bg-white px-2 py-1 drop-shadow text-black"
-            onKeyDown={handleKeyDown}
-            onCompositionStart={handleCompositionStart}
-            onCompositionEnd={handleCompositionEnd}
-            placeholder="궁금한 내용을 입력해주세요."
-          />
-          <button
-            onClick={handleSend}
-            className="absolute right-3 top-1/2 -translate-y-1/2"
-            aria-label="send"
-          >
-            <Image
-              src="/icons/input.svg"
-              alt="send"
-              width={24}
-              height={24}
-              className="object-contain"
-            />
-          </button>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 }

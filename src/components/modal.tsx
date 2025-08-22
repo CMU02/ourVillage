@@ -40,6 +40,12 @@ export default function Modal({ onClose }: Props) {
         <div className="flex items-center gap-2">
           <Image src="/icons/location.svg" alt="위치" width={25} height={25} />
           <div className="font-medium">내 위치 등록하기</div>
+
+          <div className="flex gap-2">
+          <button type="submit" className="generalBtn bg-[#75B23B]">
+            저장하기
+          </button>
+        </div>
         </div>
 
         <div className="flex gap-2">
@@ -62,14 +68,7 @@ export default function Modal({ onClose }: Props) {
           <span>구</span>
         </div>
 
-        <div className="flex gap-2">
-          <button type="submit" className="generalBtn bg-[#75B23B]">
-            저장하기
-          </button>
-          <button type="reset" className="generalBtn bg-gray-300">
-            초기화
-          </button>
-        </div>
+    
       </form>
     </div>
   );

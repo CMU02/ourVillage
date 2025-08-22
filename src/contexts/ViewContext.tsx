@@ -1,26 +1,63 @@
+// contexts/ViewContext.tsx
 "use client";
+import { createContext, useContext, useState, ReactNode } from "react";
 
-import { createContext, useContext, useMemo, useState, ReactNode } from "react";
+export type Intent = "general" | "local_currency" | "bus";
 
-export type View = "chat" | "map";
+export type View = "chat" | "map" | "localCurrency" | "bus";
+
+export type MarkerData = {
+  lat: number;
+  lng: number;
+  title: string;
+  address?: string;
+};
+
+type MapData = {
+  center: { lat: number; lng: number };
+  markers: MarkerData[];
+  kind: "localCurrency" | "bus";
+};
 
 type Ctx = {
   view: View;
   setView: (v: View) => void;
-  inputValue: string;
-  setInputValue: (s: string) => void;
+
+  mapData: MapData;
+  setMapData: (d: MapData) => void;
+
+  // ⬇️ 추가: intent (질문 1회용 모드)
+  intent: Intent;
+  setIntent: (i: Intent) => void;
 };
 
 const ViewContext = createContext<Ctx | null>(null);
 
 export function ViewProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<View>("chat");
-  const [inputValue, setInputValue] = useState("");
-  const value = useMemo(
-    () => ({ view, setView, inputValue, setInputValue }),
-    [view, inputValue]
+  const [mapData, setMapData] = useState<MapData>({
+    center: { lat: 37.405, lng: 126.932 },
+    markers: [],
+    kind: "localCurrency",
+  });
+
+  // ⬇️ 추가: 기본은 일반 모드
+  const [intent, setIntent] = useState<Intent>("general");
+
+  return (
+    <ViewContext.Provider
+      value={{
+        view,
+        setView,
+        mapData,
+        setMapData,
+        intent,
+        setIntent,
+      }}
+    >
+      {children}
+    </ViewContext.Provider>
   );
-  return <ViewContext.Provider value={value}>{children}</ViewContext.Provider>;
 }
 
 export const useView = () => {

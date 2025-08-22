@@ -109,7 +109,7 @@ export default function Header() {
         <div className="flex items-center gap-1">
           {/* 위치 표시 영역 */}
           <div>
-            {hasLocation
+            {typeof window !== "undefined" && hasLocation
               ? `${location.city} ${location.district}`
               : "사용자 위치 지정"}
           </div>

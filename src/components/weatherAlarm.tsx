@@ -15,11 +15,17 @@ interface AlarmInfo {
 export default function WeatherAlarm({ weatherInfo }: WeatherAlarmProps) {
     // 현재 시간에 가장 가까운 데이터 가져오기
     const getClosestItem = (items: UltraShortItem[]) => {
+        if (typeof window === "undefined") return items[0]; // SSR 안전
+        
         const kstParts = getKstParts(new Date());
-        const krTime = Number(`${kstParts.hour}${kstParts.minute}`);
-        return items
-            .filter((i) => Number(i.fcstTime) <= krTime)
-            .sort((a, b) => Number(b.fcstTime) - Number(a.fcstTime))[0];
+        const krTime = Number(`${kstParts.hour.padStart(2, '0')}${kstParts.minute.padStart(2, '0')}`);
+        
+        const filtered = items.filter((i) => Number(i.fcstTime) <= krTime);
+        if (filtered.length === 0) {
+            return items.sort((a, b) => Number(a.fcstTime) - Number(b.fcstTime))[0];
+        }
+        
+        return filtered.sort((a, b) => Number(b.fcstTime) - Number(a.fcstTime))[0];
     };
 
     // 각 카테고리별 데이터 추출

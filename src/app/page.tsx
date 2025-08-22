@@ -58,7 +58,7 @@ export default function Home() {
 
             <MainContainer />
 
-            <footer className="z-20">
+            <footer className="sticky z-20">
               <FooterContainer />
             </footer>
 

@@ -77,6 +77,8 @@ export default function Header() {
       params: {
         nx,
         ny,
+        base_date: new Date().toISOString().slice(0, 10).replace(/-/g, ""), // YYYYMMDD
+        base_time: getKrTime().toString(),
       },
     });
     setWeatherInfo(data.response.body.items.item);

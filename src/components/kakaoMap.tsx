@@ -1,16 +1,15 @@
 "use client";
-import { useView } from "@/contexts/ViewContext";
 import { Map, MapMarker } from "react-kakao-maps-sdk";
 
-export default function KakaoMap() {
-  const { view, setView } = useView();
-  if (view !== "map") return null;
+type Props = { onClose: () => void };
 
+export default function KakaoMap({ onClose }: Props) {
   return (
     <div className="relative w-full h-full">
       <button
-        onClick={() => setView("chat")}
+        onClick={onClose}
         className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white shadow-md hover:bg-green-600"
+        aria-label="close map"
       >
         ✕
       </button>

@@ -40,7 +40,7 @@ export default function Bottom({ placement }: Props) {
           role="tablist"
           aria-label="actions"
         >
-          {/* 콘텐츠 행: 전체 너비를 콘텐츠 합으로 강제 */}
+          {/* 서비스 목록 */}
           <div className="inline-flex min-w-max gap-2">
             <button
               type="button"
@@ -74,7 +74,6 @@ export default function Bottom({ placement }: Props) {
 
             <button
               type="button"
-              onClick={() => setView("map")}
               className="flex items-center gap-1 generalBtn shrink-0 bg-[#D88866]"
             >
               <Image

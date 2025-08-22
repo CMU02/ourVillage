@@ -20,6 +20,7 @@ export type MarkerData = {
   meta?: {
     vehId: string;
     busType?: string;
+    plainNo?: string;
     congetion?: string;
     isFull?: boolean;
     dataTm?: string;
@@ -39,7 +40,7 @@ type Ctx = {
   mapData: MapData;
   setMapData: (d: MapData) => void;
 
-  // ⬇️ 추가: intent (질문 1회용 모드)
+  // 질문 후 다시 초기화하기 위한 일회용
   intent: Intent;
   setIntent: (i: Intent) => void;
 };

@@ -25,11 +25,9 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   });
   const [hasLocation, setHasLocation] = useState(false); // 행정구역 정보
   const [hasGeoData, setHasGeoData] = useState(false); // 행정구역 좌표 정보
-  const [isClient, setIsClient] = useState(false);
 
   // 컴포넌트 마운트 시 로컬스토리지에서 위치 정보 로드
   useEffect(() => {
-    setIsClient(true);
     
     const userLocationInfo = localStorage.getItem("userLocation");
     const userLocationGeo = localStorage.getItem("userLocationGeo");

@@ -13,8 +13,16 @@ export interface ChatBotOptions {
     coords?: { nx: string; ny: string };
 }
 
+interface ChatBotRequestBody {
+    userQuestion: string;
+    coords?: {
+        nx: string;
+        ny: string;
+    };
+}
+
 export const askChatBot = async ({ userQuestion, options }: ChatBotProps) => {
-    const body: any = {
+    const body: ChatBotRequestBody = {
         userQuestion
     };
 

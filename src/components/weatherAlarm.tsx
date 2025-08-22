@@ -1,5 +1,6 @@
 import { UltraShortItem } from "@/types/weather.types";
 import { getKstParts } from "@/utils/krTime";
+import Image from "next/image";
 
 interface WeatherAlarmProps {
   weatherInfo: UltraShortItem[];
@@ -157,7 +158,7 @@ export default function WeatherAlarm({ weatherInfo }: WeatherAlarmProps) {
           className="flex items-center gap-0.5 generalBtn shrink-0 text-gray-600 bg-gray-100"
           title="현재 발효 중인 기상 경보가 없습니다"
         >
-          <img src="/icons/noAlarm.svg" alt="경보 없음" className="w-4 h-4" />
+          <Image src="/icons/noAlarm.svg" alt="경보 없음" width={16} height={16} />
           <span className="text-xs">경보 없음</span>
         </button>
       ) : (
@@ -167,10 +168,12 @@ export default function WeatherAlarm({ weatherInfo }: WeatherAlarmProps) {
             className={`flex items-center gap-0.5 generalBtn shrink-0 text-white ${alarm.color}`}
             title={alarm.message}
           >
-            <img
+            <Image
               src={alarm.iconPath}
               alt={alarm.type}
-              className="w-4 h-4 filter brightness-0 invert"
+              width={16}
+              height={16}
+              className="filter brightness-0 invert"
             />
             <span className="text-xs">{alarm.type}</span>
           </button>
@@ -178,12 +181,4 @@ export default function WeatherAlarm({ weatherInfo }: WeatherAlarmProps) {
       )}
     </div>
   );
-}
-function getWeatherData(): {
-  temperature: any;
-  rainfall: any;
-  windSpeed: any;
-  lightning: any;
-} {
-  throw new Error("Function not implemented.");
 }

@@ -52,7 +52,7 @@ export default function KakaoMap({ onClose }: Props) {
       const raw = localStorage.getItem("userLocationGeo");
       if (!raw) return;
 
-      let obj: any;
+      let obj: { lat_second_100?: string | number; logt_second_100?: string | number; lng_second_100?: string | number };
       try {
         obj = JSON.parse(raw);
       } catch {
@@ -67,7 +67,7 @@ export default function KakaoMap({ onClose }: Props) {
 
       if (Number.isFinite(lat) && Number.isFinite(lng))
         setUserCenter({ lat, lng });
-    } catch {}
+    } catch { }
   }, []);
 
   const hasMarkers = !!mapData?.markers?.length;
@@ -80,7 +80,7 @@ export default function KakaoMap({ onClose }: Props) {
   const center = useMemo(() => {
     if (hasMarkers) return mapData!.center;
     return mapData?.center ?? userCenter ?? DEFAULT_CENTER;
-  }, [hasMarkers, mapData?.center, userCenter]);
+  }, [hasMarkers, mapData?.center, userCenter, mapData]);
 
   useEffect(() => {
     if (!hasMarkers) return;
@@ -153,7 +153,7 @@ export default function KakaoMap({ onClose }: Props) {
         onCreate={(map) => (mapRef.current = map)}
         onClick={() => setActiveIdx(null)}
       >
-        {mapData?.markers?.map((m: any, i: number) => (
+        {mapData?.markers?.map((m: { lat: number; lng: number; title?: string; address?: string; industry?: string; meta?: Record<string, unknown> }, i: number) => (
           <Fragment key={`${m.lat}-${m.lng}-${i}`}>
             <MapMarker
               position={{ lat: m.lat, lng: m.lng }}
@@ -164,8 +164,8 @@ export default function KakaoMap({ onClose }: Props) {
               }}
               title={m.title ?? ""}
               onClick={() => setActiveIdx(i)}
-              // 만약 버스는 완전 비활성으로 하려면 아래 주석 해제
-              // clickable={mapData.kind !== "bus"}
+            // 만약 버스는 완전 비활성으로 하려면 아래 주석 해제
+            // clickable={mapData.kind !== "bus"}
             />
             {activeIdx === i && (
               <CustomOverlayMap
@@ -200,18 +200,18 @@ export default function KakaoMap({ onClose }: Props) {
                   ) : (
                     <div className="p-2">
                       <div className="font-bold text-black text-base truncate">
-                        {m.meta?.plainNo ? `🚌 버스: ${m.meta.plainNo}` : null}
+                        {m.meta?.plainNo && typeof m.meta.plainNo === 'string' ? `🚌 버스: ${m.meta.plainNo}` : null}
                       </div>
                       <div className="text-xs text-gray-600">
-                        {m.meta?.busType ? `· 유형: ${m.meta.busType}` : null}
+                        {m.meta?.busType && typeof m.meta.busType === 'string' ? `· 유형: ${m.meta.busType}` : null}
                       </div>
                       <div className="text-xs text-gray-600">
-                        {m.meta?.congetion
+                        {m.meta?.congetion && typeof m.meta.congetion === 'string'
                           ? `· 혼잡도: ${m.meta.congetion}`
                           : null}
                       </div>
                       <div className="text-xs text-gray-600">
-                        {m.meta?.dataTm
+                        {m.meta?.dataTm && typeof m.meta.dataTm === 'string'
                           ? `· 수신: ${formatDataTm(m.meta.dataTm)}`
                           : null}
                       </div>

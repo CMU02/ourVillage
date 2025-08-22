@@ -63,9 +63,9 @@ export default function Home() {
 
               <MainContainer />
 
-              <footer className="sticky z-20">
-                <FooterContainer />
-              </footer>
+            <footer className="sticky bottom-0 z-20">
+              <FooterContainer />
+            </footer>
 
               {/* villageCheck가 false일 때 전체 화면을 덮는 오버레이 */}
               {!villageCheck && (

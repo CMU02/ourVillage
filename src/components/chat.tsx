@@ -64,15 +64,16 @@ export default function Chat() {
         const serverMessage = res?.message ?? "(응답 없음)";
         pushMessage({ role: "bot", text: serverMessage });
 
-        console.log(serverMessage);
+        // console.log(serverMessage);   // 디버그용 코드
 
         // 각 질문 의도
         const intent = res?.meta?.intent;
-        console.log(intent);
+        // console.log(intent);    // 디버그용 코드
 
         // 버스 데이터 관련
         if (intent === "bus") {
-          const rawBuses = res?.meta?.busPositions ?? []; // ✅ 복수형
+          const rawBuses = res?.meta?.busPositions ?? [];
+          // console.log(rawBuses);    // 디버그용 코드
           const markers = (Array.isArray(rawBuses) ? rawBuses : [])
             .map((b: any) => {
               const lat = parseFloat(String(b?.gpsY)); // 위도
@@ -85,6 +86,7 @@ export default function Chat() {
                   vehId: b?.vehId,
                   busType: b?.busType,
                   congetion: b?.congetion,
+                  plainNo: b?.plainNo,
                   isFull: b?.isFullFlag === "1",
                   dataTm: b?.dataTm,
                 },
@@ -105,12 +107,14 @@ export default function Chat() {
         // 지도 데이터 후보
         else if (intent === "local_currency") {
           const rawStores = res?.meta?.topStores ?? [];
+          // console.log(rawStores) // 디버그용 콘솔
           const markers = (Array.isArray(rawStores) ? rawStores : [])
             .map((s: any) => ({
               lat: parseFloat(String(s.lat)),
               lng: parseFloat(String(s.lng)),
               title: s?.name,
               address: s?.address,
+              industry: s?.industry,
             }))
             .filter((m) => Number.isFinite(m.lat) && Number.isFinite(m.lng));
 

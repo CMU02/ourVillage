@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { useView } from "@/contexts/ViewContext";
 import { useChat } from "@/contexts/ChatContext";
+import { useLocalCurrencyGuard } from "@/hooks/localCurrencyGuard";
+import { useBusGuard } from "@/hooks/busGuard";
 
 // Chat : Map 여부에 따른 Placement 위치 수정
 type Props = {
@@ -44,6 +46,18 @@ export default function Bottom({ placement }: Props) {
     }
   };
 
+  const handleLocalCurrencyGuard = useLocalCurrencyGuard({
+    pushMessage,
+    setLastInput,
+    setView,
+  });
+
+  const handleBusGuard = useBusGuard({
+    pushMessage,
+    setView,
+    focusInput: () => inputRef.current?.focus(),
+  })
+
   return (
     <footer
       className={[
@@ -69,7 +83,7 @@ export default function Bottom({ placement }: Props) {
           <div className="inline-flex min-w-max gap-2">
             <button
               type="button"
-              onClick={() => setView("map")}
+              onClick={handleLocalCurrencyGuard}
               className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#005DAB]"
             >
               <Image
@@ -84,7 +98,7 @@ export default function Bottom({ placement }: Props) {
 
             <button
               type="button"
-              onClick={() => setView("map")}
+              onClick={handleBusGuard}
               className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#FFD8A8]"
             >
               <Image

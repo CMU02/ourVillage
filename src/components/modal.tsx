@@ -77,7 +77,7 @@ function firstTruthy(arr?: string[]) {
 }
 
 export default function Modal({ onClose }: Props) {
-  const { setLocation } = useLocation();
+  const { setLocation, setHasGeoData } = useLocation();
 
   // API 데이터
   const [cities, setCities] = useState<City[]>([]);
@@ -359,6 +359,10 @@ export default function Modal({ onClose }: Props) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const geo: GeoResponse = await res.json();
       localStorage.setItem("userLocationGeo", JSON.stringify(geo));
+
+      // LocationContext에 지오 정보 저장 완료 알림
+      setHasGeoData(true);
+
       onClose?.();
     } catch (err: unknown) {
       setErrorMsg(

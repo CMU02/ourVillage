@@ -1,21 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #fff8f0;
   --foreground: #171717;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-lee: "LeeSeoyun";
+}
+
+/* 메인 폰트 */
+@font-face {
+  font-family: "LeeSeoyun";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2202-2@1.0/LeeSeoyun.woff")
+    format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* 컴포넌트 */
+@layer components {
+  /* 하단 버튼 공용 css */
+  .generalBtn {
+    @apply h-[23px] px-2 rounded-[10px] drop-shadow text-white text-sm;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #fff8f0;
+    --foreground: #171717;
   }
 }
 
@@ -23,4 +39,36 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* 애니메이션 설정 */
+.panel-initial {
+  transform: translateY(100%);
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 100%, 0);
+}
+
+@keyframes mapUp {
+  from {
+    transform: translate3d(0, 80%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes mapDown {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 80%, 0);
+  }
+}
+
+.play-up {
+  animation: mapUp 480ms ease-out forwards;
+}
+.play-down {
+  animation: mapDown 480ms ease-in forwards;
 }

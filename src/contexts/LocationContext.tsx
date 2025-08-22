@@ -25,39 +25,37 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   });
   const [hasLocation, setHasLocation] = useState(false); // 행정구역 정보
   const [hasGeoData, setHasGeoData] = useState(false); // 행정구역 좌표 정보
+  const [isClient, setIsClient] = useState(false);
 
   // 컴포넌트 마운트 시 로컬스토리지에서 위치 정보 로드
   useEffect(() => {
-    const loadLocationFromStorage = () => {
-      const userLocationInfo = localStorage.getItem("userLocation");
-      const userLocationGeo = localStorage.getItem("userLocationGeo");
+    setIsClient(true);
+    
+    const userLocationInfo = localStorage.getItem("userLocation");
+    const userLocationGeo = localStorage.getItem("userLocationGeo");
 
-      if (userLocationInfo) {
-        try {
-          const info = JSON.parse(userLocationInfo) as {
-            province?: string;
-            city: string;
-            district: string;
-          };
-          setLocation({
-            province: info.province || "",
-            city: info.city,
-            district: info.district,
-          });
-          setHasLocation(true);
-        } catch (error) {
-          console.error("로컬스토리지 위치 정보 파싱 오류:", error);
-        }
+    if (userLocationInfo) {
+      try {
+        const info = JSON.parse(userLocationInfo) as {
+          province?: string;
+          city: string;
+          district: string;
+        };
+        setLocation({
+          province: info.province || "",
+          city: info.city,
+          district: info.district,
+        });
+        setHasLocation(true);
+      } catch (error) {
+        console.error("로컬스토리지 위치 정보 파싱 오류:", error);
       }
+    }
 
-      // 지오 정보 확인
-      if (userLocationGeo) {
-        setHasGeoData(true);
-        console.log("지오 정보 확인 완료");
-      }
-    };
-
-    loadLocationFromStorage();
+    // 지오 정보 확인
+    if (userLocationGeo) {
+      setHasGeoData(true);
+    }
   }, []);
 
   // 위치 정보 업데이트 시 로컬스토리지에도 저장

@@ -4,9 +4,12 @@ import { useState, useMemo } from "react";
 import Header from "../components/header";
 import Body from "../components/body";
 import Footer from "@/components/footer";
-import { ViewProvider, useView } from "@/contexts/ViewContext";
 import Modal from "@/components/modal";
+
+import { ViewProvider, useView } from "@/contexts/ViewContext";
 import { LocationProvider } from "@/contexts/LocationContext";
+import { ChatProvider } from "@/contexts/ChatContext";
+import Chat from "@/components/chat";
 
 function FooterContainer() {
   const { view } = useView();
@@ -39,31 +42,33 @@ export default function Home() {
 
   return (
     <LocationProvider>
-      <ViewProvider>
-        <div className={rootClass}>
-          <header className="sticky top-0 z-20">
-            <Header />
-          </header>
+      <ChatProvider>
+        <ViewProvider>
+          <div className={rootClass}>
+            <header className="sticky top-0 z-20">
+              <Header />
+            </header>
 
-          <MainContainer />
+            <MainContainer />
 
-          <footer className="z-20">
-            <FooterContainer />
-          </footer>
+            <footer className="z-20">
+              <FooterContainer />
+            </footer>
 
-          {/* villageCheck가 false일 때 전체 화면을 덮는 오버레이 */}
-          {!villageCheck && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/45"
-              role="dialog"
-              aria-modal="true"
-            >
-              {/* Modal 자체는 투명 배경 위의 카드라고 가정 */}
-              <Modal onClose={() => setVillageCheck(true)} />
-            </div>
-          )}
-        </div>
-    </ViewProvider>
+            {/* villageCheck가 false일 때 전체 화면을 덮는 오버레이 */}
+            {!villageCheck && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/45"
+                role="dialog"
+                aria-modal="true"
+              >
+                {/* Modal 자체는 투명 배경 위의 카드라고 가정 */}
+                <Modal onClose={() => setVillageCheck(true)} />
+              </div>
+            )}
+          </div>
+        </ViewProvider>
+      </ChatProvider>
     </LocationProvider>
   );
 }

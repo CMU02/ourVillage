@@ -1,22 +1,30 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useView } from "@/contexts/ViewContext";
+import { useChat } from "@/contexts/ChatContext";
 
+// Chat : Map 여부에 따른 Placement 위치 수정
 type Props = {
   placement: "footer" | "inline"; // footer: 하단 고정, inline: Body 상단
 };
 
 export default function Bottom({ placement }: Props) {
   const { setView } = useView();
+  const { setLastInput, pushMessage } = useChat();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSend = () => {
     const value = inputRef.current?.value?.trim() ?? "";
     if (!value) return;
-    console.log("send:", value);
+    
+    console.log("전송된 메시지:", value);
+    setLastInput({id: Date.now(), text: value});
+    pushMessage({ role: "user", text: value});
+
     if (inputRef.current) inputRef.current.value = "";
+    
   };
 
   return (
@@ -95,6 +103,7 @@ export default function Bottom({ placement }: Props) {
             type="text"
             className="w-full h-[40px] rounded-[5px] border-none bg-white px-2 py-1 drop-shadow text-black"
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="궁금한 내용을 입력해주세요."
           />
           <button
             onClick={handleSend}

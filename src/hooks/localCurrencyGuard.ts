@@ -31,15 +31,34 @@ function isGyeonggi(storageKey = "userLocation"): boolean {
   }
 }
 
-function extractCityBase(storageKey = "userLocation"): string | null {
+// 문자열만 받아서 '시/군' 기준 베이스를 뽑기
+export function parseCityBase(cityRaw: string | null | undefined): string | null {
+  const s = String(cityRaw ?? "").replace(/\s/g, "");
+  if (!s) return null;
+
+  // 이미 '시/군'으로 끝나면 그대로 반환 (예: 시흥시, 군포시, 성남시)
+  if (/[시군]$/u.test(s)) return s;
+
+  // '시/군' 뒤에 하위 행정구역(구/동/읍/면/리)이 오는 첫 지점까지 캡처
+  //  예: 수원시장안구 → 수원시, 고양시일산서구 → 고양시
+  const m = s.match(/^(.+?(?:시|군))(?=(?:[가-힣]{0,6})?(?:구|동|읍|면|리)|$)/u);
+  if (m) return m[1];
+
+  // 예외/희귀 케이스 대비: 마지막 '시/군'까지 자르기
+  const lastSi = s.lastIndexOf("시");
+  const lastGun = s.lastIndexOf("군");
+  const last = Math.max(lastSi, lastGun);
+  return last >= 0 ? s.slice(0, last + 1) : s || null;
+}
+
+// localStorage 연동 래퍼 (클라이언트 전용)
+export function extractCityBase(storageKey = "userLocation"): string | null {
   try {
+    if (typeof window === "undefined" || !("localStorage" in window)) return null;
     const raw = localStorage.getItem(storageKey);
     if (!raw) return null;
-    const obj = JSON.parse(raw);
-    const rawCity = String(obj?.city ?? "").replace(/\s/g, "");
-    if (!rawCity) return null;
-    const m = rawCity.match(/^(.*?(시|군))/u);
-    return m ? m[1] : rawCity;
+    const obj = JSON.parse(raw) as { city?: string | null };
+    return parseCityBase(obj?.city);
   } catch {
     return null;
   }

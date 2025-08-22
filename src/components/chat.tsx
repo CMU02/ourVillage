@@ -100,7 +100,11 @@ export default function Chat() {
           setView("chat");
         }
       } catch (e) {
-        if (!aborted) pushMessage({ role: "bot", text: "죄송해요, 다른 질문을 해주세요.." });
+        if (!aborted)
+          pushMessage({
+            role: "bot",
+            text: "죄송해요, 다른 질문을 해주세요..",
+          });
         console.error(e);
       } finally {
         if (!aborted) setLoading(false);
@@ -194,7 +198,9 @@ export default function Chat() {
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+            className={`flex ${
+              m.role === "user" ? "justify-end" : "justify-start"
+            }`}
           >
             <div
               className={`max-w-[70%] px-3 py-2 rounded shadow text-sm ${

@@ -6,7 +6,13 @@ import KakaoMap from "./kakaoMap";
 import Bottom from "./footer";
 
 import { useView } from "@/contexts/ViewContext";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 export default function Body() {
   const { view, setView } = useView();
@@ -35,7 +41,9 @@ export default function Body() {
   const handleAnimationEnd = useCallback(() => {
     if (anim === "up") {
       // 지도가 비어 보일 때 레이아웃 재계산
-      try { window.dispatchEvent(new Event("resize")); } catch {}
+      try {
+        window.dispatchEvent(new Event("resize"));
+      } catch {}
     }
     if (anim === "down") {
       setAnim("none");
@@ -52,8 +60,8 @@ export default function Body() {
           className={[
             "flex flex-1 min-h-0 flex-col w-full max-w-full",
             anim === "none" ? "panel-initial" : "",
-            anim === "up"   ? "play-up"       : "",
-            anim === "down" ? "play-down"     : "",
+            anim === "up" ? "play-up" : "",
+            anim === "down" ? "play-down" : "",
           ].join(" ")}
           onAnimationEnd={handleAnimationEnd}
         >

@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@/contexts/ChatContext";
 import { useView } from "@/contexts/ViewContext";
-import api from "@/lib/axios";
+import { askChatBot } from "@/api/chatbot.api";
 
 // 상위 5개 마커 평균값으로 center
 function getCenterFromMarkers(markers: { lat: number; lng: number }[]) {
@@ -37,21 +37,43 @@ export default function Chat() {
     (async () => {
       try {
         setLoading(true);
-        const res = await api.post("/chatbot/ask", { userQuestion: text });
+
+        // 좌표 정보 가져오기 (날씨 관련 질문에 사용)
+        let coords;
+        if (typeof window !== "undefined") {
+          const userLocationGeo = localStorage.getItem("userLocationGeo");
+          if (userLocationGeo) {
+            try {
+              const geoData = JSON.parse(userLocationGeo);
+              coords = {
+                nx: geoData.grid_x,
+                ny: geoData.grid_y
+              };
+            } catch (error) {
+              console.error("좌표 정보 파싱 오류:", error);
+            }
+          }
+        }
+
+        const res = await askChatBot({
+          userQuestion: text,
+          options: coords ? { coords } : undefined
+        });
         if (aborted) return;
 
-        const serverMessage = res?.data?.message ?? "(응답 없음)";
+        const serverMessage = res?.message ?? "(응답 없음)";
         pushMessage({ role: "bot", text: serverMessage });
 
-        console.log(serverMessage);
+        // console.log(serverMessage);   // 디버그용 코드
 
         // 각 질문 의도
-        const intent = res?.data?.meta?.intent;
-        console.log(intent);
+        const intent = res?.meta?.intent;
+        // console.log(intent);    // 디버그용 코드
 
         // 버스 데이터 관련
         if (intent === "bus") {
-          const rawBuses = res?.data?.meta?.busPositions ?? []; // ✅ 복수형
+          const rawBuses = res?.meta?.busPositions ?? [];
+          // console.log(rawBuses);    // 디버그용 코드
           const markers = (Array.isArray(rawBuses) ? rawBuses : [])
             .map((b: any) => {
               const lat = parseFloat(String(b?.gpsY)); // 위도
@@ -64,6 +86,7 @@ export default function Chat() {
                   vehId: b?.vehId,
                   busType: b?.busType,
                   congetion: b?.congetion,
+                  plainNo: b?.plainNo,
                   isFull: b?.isFullFlag === "1",
                   dataTm: b?.dataTm,
                 },
@@ -83,13 +106,15 @@ export default function Chat() {
 
         // 지도 데이터 후보
         else if (intent === "local_currency") {
-          const rawStores = res?.data?.meta?.topStores ?? [];
+          const rawStores = res?.meta?.topStores ?? [];
+          // console.log(rawStores) // 디버그용 콘솔
           const markers = (Array.isArray(rawStores) ? rawStores : [])
             .map((s: any) => ({
               lat: parseFloat(String(s.lat)),
               lng: parseFloat(String(s.lng)),
               title: s?.name,
               address: s?.address,
+              industry: s?.industry,
             }))
             .filter((m) => Number.isFinite(m.lat) && Number.isFinite(m.lng));
 
@@ -203,11 +228,10 @@ export default function Chat() {
             }`}
           >
             <div
-              className={`max-w-[70%] px-3 py-2 rounded shadow text-sm ${
-                m.role === "user"
-                  ? "bg-blue-500 text-white rounded-br-none"
-                  : "bg-gray-200 text-black rounded-bl-none"
-              }`}
+              className={`max-w-[70%] px-3 py-2 rounded shadow text-sm ${m.role === "user"
+                ? "bg-blue-500 text-white rounded-br-none"
+                : "bg-gray-200 text-black rounded-bl-none"
+                }`}
             >
               {m.text}
             </div>

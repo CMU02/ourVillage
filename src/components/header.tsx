@@ -1,104 +1,88 @@
 "use client";
 
+import { getWeatherCondition } from "@/components/vaildWeatherCondition";
 import { useLocation } from "@/contexts/LocationContext";
+import { useWeather } from "@/hooks/useWeather";
+import { UltraShortItem } from "@/types/weather.types";
+import { buildForecastBase, getKstParts } from "@/utils/krTime";
 import Image from "next/image";
-import { use, useEffect, useState } from "react";
-import axios from "axios";
-
-const WEATHER_API_PATH =
-  "https://server.cieloblu.co.kr/weather/ultra-short-forecast";
-
-interface UltraShortItem {
-  baseDate: string;
-  baseTime: string;
-  category: string; // "T1H" 등
-  fcstDate: string;
-  fcstTime: string;
-  fcstValue: string;
-  nx: number;
-  ny: number;
-}
-
-interface UltraShortResponse {
-  response: {
-    header: {
-      resultCode: string;
-      resultMsg: string;
-    };
-    body: {
-      items: {
-        item: UltraShortItem[];
-      };
-      totalCount: number;
-    };
-  };
-}
+import { useMemo } from "react";
+import WeatherAlarm from "./weatherAlarm";
 
 export default function Header() {
-  const { location } = useLocation();
+  const { location, hasLocation, hasGeoData } = useLocation();
 
-  const [displayCity, setDisplayCity] = useState(""); // 행정구역
-  const [displayDistrict, setDisplayDistrict] = useState(""); // 읍/면/동
-  const [hasLocation, setHasLocation] = useState(false); // 위치 정보 유무
+  // 날씨 API 매개변수 계산
+  const weatherParams = useMemo(() => {
+    // 클라이언트 사이드에서만 localStorage 접근
+    if (typeof window === "undefined") return null;
 
-  const [weatherInfo, setWeatherInfo] = useState<UltraShortItem[]>([]); // 날씨 정보
+    // 행정구역과 좌표 정보가 모두 있어야 함
+    if (!hasLocation || !hasGeoData) return null;
 
-  const [temperature, setTemperature] = useState<string | null>(); // 온도
-  const [isWeatherLoading, setIsWeatherLoading] = useState<boolean>(false); // 날씨 로딩 상태
-  const [weatherError, setWeatherError] = useState<string>(""); // 날씨 에러 메시지
-
-  /**
-   * 행정구역 가져오는 함수
-   */
-  const getLocation = async () => {
-    const userLocationInfo = localStorage.getItem("userLocation");
-    if (!userLocationInfo) return console.warn("위치 정보가 없습니다.");
-
-    const info = JSON.parse(userLocationInfo) as {
-      city: string;
-      district: string;
-    };
-
-    setDisplayCity(info.city);
-    setDisplayDistrict(info.district);
-    setHasLocation(true);
-  };
-
-  const fetchWeather = async () => {
     const userLocationGeo = localStorage.getItem("userLocationGeo");
-    if (!userLocationGeo) return console.warn("위치 정보가 없습니다.");
-    const { grid_x: nx, grid_y: ny } = JSON.parse(userLocationGeo) as {
-      grid_x: string;
-      grid_y: string;
-    };
-    setIsWeatherLoading(true);
+    if (!userLocationGeo) return null;
 
-    const { data } = await axios.get<UltraShortResponse>(WEATHER_API_PATH, {
-      params: {
-        nx,
-        ny,
-        base_date: new Date().toISOString().slice(0, 10).replace(/-/g, ""), // YYYYMMDD
-        base_time: getKrTime().toString(),
-      },
-    });
-    setWeatherInfo(data.response.body.items.item);
+    try {
+      const { grid_x: nx, grid_y: ny } = JSON.parse(userLocationGeo) as {
+        grid_x: string;
+        grid_y: string;
+      };
+
+      const params = buildForecastBase(nx, ny);
+      return params;
+    } catch (error) {
+      console.error("지오 정보 파싱 오류:", error);
+      return null;
+    }
+  }, [hasLocation, hasGeoData]); // hasLocation과 hasGeoData가 변경될 때마다 재계산
+
+  // React Query를 사용한 날씨 데이터 가져오기
+  const { data: weatherInfo = [], isLoading, error } = useWeather(weatherParams);
+
+  const getClosestItme = (item: UltraShortItem[]) => {
+    const kstParts = getKstParts(new Date());
+    const krTime = Number(`${kstParts.hour}${kstParts.minute}`);
+
+    return item.filter((i) => Number(i.fcstTime) <= krTime)
+      .sort((a, b) => Number(b.fcstTime) - Number(a.fcstTime))[0];
+  }
+
+  // 온도 표시 로직
+  const getTemperatureDisplay = () => {
+    if (isLoading) return "로딩중...";
+    if (error) {
+      console.error('Weather error:', error);
+      return "오류";
+    }
+
+    const t1hItems = weatherInfo.filter((i) => i.category === "T1H");
+
+    if (t1hItems.length === 0) return "데이터 없음";
+    const closest = getClosestItme(t1hItems);
+
+    return closest ? `${closest.fcstValue}°C` : "데이터 없음";
   };
 
-  const getKrTime = () => {
-    const now = new Date();
-    const kstTime = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Seoul" })
-    );
-    const hours = String(kstTime.getHours()).padStart(2, "0");
-    const minutes = String(kstTime.getMinutes()).padStart(2, "0");
-    const currentTime = Number(`${hours}${minutes}`);
-    return currentTime;
+  // 날씨 아이콘과 설명 가져오기
+  const getWeatherDisplay = () => {
+    if (isLoading || error || !weatherInfo.length) {
+      return {
+        icon: "/icons/sunny.svg",
+        description: "날씨"
+      };
+    }
+
+    const skyItems = weatherInfo.filter((i) => i.category === "SKY");
+    const precipitationItems = weatherInfo.filter((i) => i.category === "PTY");
+
+    const skyItem = skyItems.length ? getClosestItme(skyItems) : undefined;
+    const precipitationItem = precipitationItems.length ? getClosestItme(precipitationItems) : undefined;
+
+    return getWeatherCondition({ skyItem, precipitationItem });
   };
 
-  useEffect(() => {
-    getLocation();
-    fetchWeather();
-  }, []);
+  const weatherDisplay = getWeatherDisplay();
 
   return (
     <header className="sticky w-full max-md:px-[11px] max-md:pt-[15px] p-3">
@@ -107,15 +91,15 @@ export default function Header() {
           {/* 위치 표시 영역 */}
           <div>
             {hasLocation
-              ? `${displayCity} ${displayDistrict}`
+              ? `${location.city} ${location.district}`
               : "사용자 위치 지정"}
           </div>
 
           <div></div>
           <div>
             <Image
-              src="/icons/sunny.svg"
-              alt="날씨"
+              src={weatherDisplay.icon}
+              alt={weatherDisplay.description}
               width={15}
               height={15}
               className="object-contain"
@@ -124,41 +108,12 @@ export default function Header() {
 
           {/* 온도 표시: 로딩/에러/정상 */}
           <div>
-            {(() => {
-              const t1hItems = weatherInfo.filter((i) => i.category === "T1H");
-              if (!t1hItems.length) return "데이터 없음";
-              const krTime = getKrTime();
-
-              // 현재 시간보다 작거나 같은 fcstTime 중에서 가장 큰 값
-              const closest = t1hItems
-                .filter((i) => Number(i.fcstTime) <= krTime)
-                .sort((a, b) => Number(b.fcstTime) - Number(a.fcstTime))[0];
-              return closest ? `${closest.fcstValue}°C` : "데이터 없음";
-            })()}
+            {getTemperatureDisplay()}
           </div>
         </div>
 
         <div className="flex items-center gap-1">
-          <button className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#FF6F6F]">
-            <Image
-              src="/icons/heatWave.svg"
-              alt="폭염 경보"
-              width={15}
-              height={15}
-              className="object-contain"
-            />
-            폭염 경보
-          </button>
-          <button className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#896FFF]">
-            <Image
-              src="/icons/mask.svg"
-              alt="미세먼지"
-              width={15}
-              height={15}
-              className="object-contain"
-            />
-            미세먼지 좋음
-          </button>
+          <WeatherAlarm weatherInfo={weatherInfo} />
         </div>
       </div>
     </header>

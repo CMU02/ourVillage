@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useRef, useState } from "react";
 import { useView } from "@/contexts/ViewContext";
 import { useChat } from "@/contexts/ChatContext";
+import { useLocalCurrencyGuard } from "@/hooks/localCurrencyGuard";
+import { useBusGuard } from "@/hooks/busGuard";
 
 // Chat : Map 여부에 따른 Placement 위치 수정
 type Props = {
@@ -14,18 +16,47 @@ export default function Bottom({ placement }: Props) {
   const { setView } = useView();
   const { setLastInput, pushMessage } = useChat();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [isComposing, setIsComposing] = useState(false); // IME 조합 상태 추적
 
   const handleSend = () => {
     const value = inputRef.current?.value?.trim() ?? "";
     if (!value) return;
-    
-    console.log("전송된 메시지:", value);
-    setLastInput({id: Date.now(), text: value});
-    pushMessage({ role: "user", text: value});
+
+    setLastInput({ id: Date.now(), text: value });
+    pushMessage({ role: "user", text: value });
 
     if (inputRef.current) inputRef.current.value = "";
-    
   };
+
+  // 한글 입력 시작
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  // 한글 입력 완료
+  const handleCompositionEnd = () => {
+    setIsComposing(false);
+  };
+
+  // 키 입력 처리
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !isComposing) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleLocalCurrencyGuard = useLocalCurrencyGuard({
+    pushMessage,
+    setLastInput,
+    setView,
+  });
+
+  const handleBusGuard = useBusGuard({
+    pushMessage,
+    setView,
+    focusInput: () => inputRef.current?.focus(),
+  })
 
   return (
     <footer
@@ -52,7 +83,7 @@ export default function Bottom({ placement }: Props) {
           <div className="inline-flex min-w-max gap-2">
             <button
               type="button"
-              onClick={() => setView("map")}
+              onClick={handleLocalCurrencyGuard}
               className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#005DAB]"
             >
               <Image
@@ -67,7 +98,7 @@ export default function Bottom({ placement }: Props) {
 
             <button
               type="button"
-              onClick={() => setView("map")}
+              onClick={handleBusGuard}
               className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#FFD8A8]"
             >
               <Image
@@ -102,7 +133,9 @@ export default function Bottom({ placement }: Props) {
             ref={inputRef}
             type="text"
             className="w-full h-[40px] rounded-[5px] border-none bg-white px-2 py-1 drop-shadow text-black"
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            onKeyDown={handleKeyDown}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
             placeholder="궁금한 내용을 입력해주세요."
           />
           <button

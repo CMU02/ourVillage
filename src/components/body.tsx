@@ -1,4 +1,3 @@
-// Body.tsx
 "use client";
 
 import Chat from "./chat";
@@ -12,35 +11,41 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useMemo,
 } from "react";
 
 export default function Body() {
   const { view, setView } = useView();
 
+  // 애니메이션 대상 뷰 / Chat을 위에 고정해야 하는 뷰
+  const ANIM_VIEWS = useMemo(
+    () => new Set(["map", "bus", "localCurrency"]),
+    []
+  );
+  const CHAT_ABOVE_VIEWS = useMemo(() => new Set(["bus", "localCurrency"]), []);
+
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [anim, setAnim] = useState<"none" | "up" | "down">("none");
 
-  // map 모드 진입 시: 초기 상태 → 다음 프레임에 상승
+  // 애니메이션 초기화
   useLayoutEffect(() => {
-    if (view !== "map") return;
+    if (!ANIM_VIEWS.has(view as string)) return;
     setAnim("none");
-  }, [view]);
+  }, [view, ANIM_VIEWS]);
 
   useEffect(() => {
-    if (view !== "map") return;
+    if (!ANIM_VIEWS.has(view as string)) return;
     const id = requestAnimationFrame(() => setAnim("up"));
     return () => cancelAnimationFrame(id);
-  }, [view]);
+  }, [view, ANIM_VIEWS]);
 
-  // ⬇️ 닫기: map이면 하강 애니메이션, 나머지는 즉시 chat 복귀
   const handleClose = useCallback(() => {
-    if (view === "map") setAnim("down");
+    if (ANIM_VIEWS.has(view as string)) setAnim("down");
     else setView("chat");
-  }, [view, setView]);
+  }, [view, setView, ANIM_VIEWS]);
 
   const handleAnimationEnd = useCallback(() => {
     if (anim === "up") {
-      // 지도가 비어 보일 때 레이아웃 재계산
       try {
         window.dispatchEvent(new Event("resize"));
       } catch {}
@@ -51,55 +56,54 @@ export default function Body() {
     }
   }, [anim, setView]);
 
-  switch (view) {
-    case "map":
-      // ✅ 애니메이션 패널은 map 케이스에서 렌더
-      return (
-        <div
-          ref={panelRef}
-          className={[
-            "flex flex-1 min-h-0 flex-col w-full max-w-full",
-            anim === "none" ? "panel-initial" : "",
-            anim === "up" ? "play-up" : "",
-            anim === "down" ? "play-down" : "",
-          ].join(" ")}
-          onAnimationEnd={handleAnimationEnd}
-        >
-          <Bottom placement="inline" />
-          <div className="flex-1 min-h-0 flex w-full max-w-full px-2 pb-3 md:px-[10px] md:pb-[15px]">
-            <KakaoMap onClose={handleClose} />
-          </div>
-        </div>
-      );
+  // 공용 애니메이션 패널
+  const AnimatedPanel: React.FC<{ children: React.ReactNode }> = ({
+    children,
+  }) => (
+    <div
+      ref={panelRef}
+      className={[
+        "flex flex-1 min-h-0 flex-col w-full max-w-full",
+        anim === "none" ? "panel-initial" : "",
+        anim === "up" ? "play-up" : "",
+        anim === "down" ? "play-down" : "",
+      ].join(" ")}
+      onAnimationEnd={handleAnimationEnd}
+    >
+      {children}
+    </div>
+  );
 
-    case "localCurrency":
-      return (
-        <div className="flex flex-1 min-h-0 flex-col w/full max-w-full">
-          <Chat />
-          <Bottom placement="inline" />
-          <div className="flex-1 min-h-0 px-2 pb-3 md:px-[10px] md:pb-[15px]">
-            <KakaoMap onClose={handleClose} />
-          </div>
-        </div>
-      );
+  // Bottom + Map을 하나로 묶어 재사용
+  const MapArea = (
+    <>
+      <Bottom placement="inline" />
+      <div className="flex-1 min-h-0 px-2 pb-3 md:px-[10px] md:pb-[15px]">
+        <KakaoMap onClose={handleClose} />
+      </div>
+    </>
+  );
 
-    case "bus":
-      return (
-        <div className="flex flex-1 min-h-0 flex-col w/full max-w-full">
-          <Chat />
-          <Bottom placement="inline" />
-          <div className="flex-1 min-h-0 px-2 pb-3 md:px-[10px] md:pb-[15px]">
-            <KakaoMap onClose={handleClose} />
-          </div>
-        </div>
-      );
-
-    default:
-      // ✅ 기본 CHAT 모드(지도 없음)
-      return (
-        <div className="h-full w-full max-w-full">
-          <Chat />
-        </div>
-      );
+  // 뷰별 레이아웃 스위치 (중복 최소화)
+  if (view === "map") {
+    // 전체가 애니메이션
+    return <AnimatedPanel>{MapArea}</AnimatedPanel>;
   }
+
+  if (CHAT_ABOVE_VIEWS.has(view as string)) {
+    // Chat은 고정, MapArea만 애니메이션
+    return (
+      <div className="flex flex-1 min-h-0 flex-col w-full max-w-full">
+        <Chat />
+        <AnimatedPanel>{MapArea}</AnimatedPanel>
+      </div>
+    );
+  }
+
+  // 기본 Chat 전용
+  return (
+    <div className="h-full w-full max-w-full">
+      <Chat />
+    </div>
+  );
 }

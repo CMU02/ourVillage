@@ -41,7 +41,7 @@ export function ViewProvider({ children }: { children: ReactNode }) {
     kind: "localCurrency",
   });
 
-  // ⬇️ 추가: 기본은 일반 모드
+  // 기본은 일반 모드
   const [intent, setIntent] = useState<Intent>("general");
 
   return (

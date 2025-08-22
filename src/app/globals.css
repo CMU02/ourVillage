@@ -40,3 +40,35 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 애니메이션 설정 */
+.panel-initial {
+  transform: translateY(100%);
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 100%, 0);
+}
+
+@keyframes mapUp {
+  from {
+    transform: translate3d(0, 80%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes mapDown {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 80%, 0);
+  }
+}
+
+.play-up {
+  animation: mapUp 480ms ease-out forwards;
+}
+.play-down {
+  animation: mapDown 480ms ease-in forwards;
+}

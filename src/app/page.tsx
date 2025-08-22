@@ -31,12 +31,19 @@ function MainContainer() {
 }
 
 export default function Home() {
-  // villageCheck: true면 모달 숨김, false면 모달 표시
-  const [villageCheck, setVillageCheck] = useState(false);
+  // ✅ villageCheck: true면 모달 숨김, false면 모달 표시
+  // localStorage에 userLocation이 없을 때만 false로 시작
+  const [villageCheck, setVillageCheck] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true; // SSR 안전
+    const saved = localStorage.getItem("userLocation");
+    return !!saved; // 값이 있으면 true(모달 숨김), 없으면 false(모달 표시)
+  });
 
-  // 모달 열릴 때 뒷배경 스크롤 잠금
   const rootClass = useMemo(
-    () => `flex flex-col min-h-dvh font-lee ${!villageCheck ? "overflow-hidden" : ""}`,
+    () =>
+      `flex flex-col min-h-dvh font-lee ${
+        !villageCheck ? "overflow-hidden" : ""
+      }`,
     [villageCheck]
   );
 

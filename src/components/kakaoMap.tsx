@@ -3,10 +3,12 @@ import { Map, MapMarker } from "react-kakao-maps-sdk";
 import { useView } from "@/contexts/ViewContext";
 import { useEffect, useRef } from "react";
 
+type Props = { onClose: () => void };
+
 export const LOCAL_CURRENCY_ICON = "/icons/localCurrency.svg";
 const BUS_ICON = "/icons/bus.svg";
 
-export default function KakaoMap() {
+export default function KakaoMap({ onClose }: Props) {
   const { view, setView, mapData } = useView();
   const mapRef = useRef<kakao.maps.Map | null>(null);
 
@@ -41,9 +43,9 @@ export default function KakaoMap() {
     <div className="relative w-full h-full">
       {/* 닫기 버튼 */}
       <button
-        onClick={() => setView("chat")}
+        onClick={onClose}
         className="absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white shadow-md hover:bg-green-600"
-        aria-label="지도 닫기"
+        aria-label="close map"
       >
         ✕
       </button>
@@ -69,5 +71,6 @@ export default function KakaoMap() {
         ))}
       </Map>
     </div>
-  );
+    );
 }
+

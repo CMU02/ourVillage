@@ -48,7 +48,7 @@ export default function Bottom({ placement }: Props) {
               className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#005DAB]"
             >
               <Image
-                src="/icons/btn_1.png"
+                src="/icons/gyeonggi.svg"
                 alt="지역화폐"
                 width={15}
                 height={15}
@@ -63,7 +63,7 @@ export default function Bottom({ placement }: Props) {
               className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#FFD8A8]"
             >
               <Image
-                src="/icons/btn_2.png"
+                src="/icons/bus.svg"
                 alt="버스 정류장"
                 width={15}
                 height={15}
@@ -75,10 +75,10 @@ export default function Bottom({ placement }: Props) {
             <button
               type="button"
               onClick={() => setView("map")}
-              className="flex items-center gap-0.5 generalBtn shrink-0 bg-[#D88866]"
+              className="flex items-center gap-1 generalBtn shrink-0 bg-[#D88866]"
             >
               <Image
-                src="/icons/btn_3.png"
+                src="/icons/service.svg"
                 alt="서비스 준비중"
                 width={15}
                 height={15}
@@ -103,7 +103,7 @@ export default function Bottom({ placement }: Props) {
             aria-label="send"
           >
             <Image
-              src="/icons/input.png"
+              src="/icons/input.svg"
               alt="send"
               width={24}
               height={24}

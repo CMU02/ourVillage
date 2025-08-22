@@ -1,7 +1,14 @@
 "use client";
 import { CustomOverlayMap, Map, MapMarker } from "react-kakao-maps-sdk";
 import { useView } from "@/contexts/ViewContext";
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 type Props = { onClose: () => void };
 
@@ -12,8 +19,10 @@ const DEFAULT_CENTER = { lat: 37.405, lng: 126.932 };
 // 기본 Center 값 계산을 위한 기능
 function isDefaultCenter(c?: { lat: number; lng: number } | null) {
   if (!c) return true;
-  return Math.abs(c.lat - DEFAULT_CENTER.lat) < 1e-6 &&
-         Math.abs(c.lng - DEFAULT_CENTER.lng) < 1e-6;
+  return (
+    Math.abs(c.lat - DEFAULT_CENTER.lat) < 1e-6 &&
+    Math.abs(c.lng - DEFAULT_CENTER.lng) < 1e-6
+  );
 }
 
 // dataTm 문자열을 "YYYYMMDDHHMMSS" → "YYYY년 MM월 DD일 HH:MM:SS" 로 변환하는 기능
@@ -33,7 +42,10 @@ export default function KakaoMap({ onClose }: Props) {
   const mapRef = useRef<kakao.maps.Map | null>(null);
 
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
-  const [userCenter, setUserCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const [userCenter, setUserCenter] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   useEffect(() => {
     try {
@@ -41,13 +53,20 @@ export default function KakaoMap({ onClose }: Props) {
       if (!raw) return;
 
       let obj: any;
-      try { obj = JSON.parse(raw); } catch { obj = JSON.parse(raw.replace(/'/g, '"')); }
+      try {
+        obj = JSON.parse(raw);
+      } catch {
+        obj = JSON.parse(raw.replace(/'/g, '"'));
+      }
 
-      const lat = obj?.lat_second_100 ? parseFloat(String(obj.lat_second_100)) : NaN;
+      const lat = obj?.lat_second_100
+        ? parseFloat(String(obj.lat_second_100))
+        : NaN;
       const lngCandidate = obj?.logt_second_100 ?? obj?.lng_second_100;
       const lng = lngCandidate ? parseFloat(String(lngCandidate)) : NaN;
 
-      if (Number.isFinite(lat) && Number.isFinite(lng)) setUserCenter({ lat, lng });
+      if (Number.isFinite(lat) && Number.isFinite(lng))
+        setUserCenter({ lat, lng });
     } catch {}
   }, []);
 
@@ -69,10 +88,14 @@ export default function KakaoMap({ onClose }: Props) {
     if (!map || !window.kakao) return;
 
     const bounds = new kakao.maps.LatLngBounds();
-    mapData!.markers.forEach((m) => bounds.extend(new kakao.maps.LatLng(m.lat, m.lng)));
+    mapData!.markers.forEach((m) =>
+      bounds.extend(new kakao.maps.LatLng(m.lat, m.lng))
+    );
     if (mapData!.markers.length === 1) {
       map.setLevel(4);
-      map.setCenter(new kakao.maps.LatLng(mapData!.markers[0].lat, mapData!.markers[0].lng));
+      map.setCenter(
+        new kakao.maps.LatLng(mapData!.markers[0].lat, mapData!.markers[0].lng)
+      );
     } else {
       map.setBounds(bounds);
     }
@@ -106,7 +129,8 @@ export default function KakaoMap({ onClose }: Props) {
     onClose();
   }, [resetMapData, onClose]);
 
-  if (!(view === "map" || view === "localCurrency" || view === "bus")) return null;
+  if (!(view === "map" || view === "localCurrency" || view === "bus"))
+    return null;
 
   const iconSrc = mapData?.kind === "bus" ? BUS_ICON : LOCAL_CURRENCY_ICON;
 
@@ -144,31 +168,52 @@ export default function KakaoMap({ onClose }: Props) {
               // clickable={mapData.kind !== "bus"}
             />
             {activeIdx === i && (
-              <CustomOverlayMap position={{ lat: m.lat, lng: m.lng }} yAnchor={0}>
+              <CustomOverlayMap
+                position={{ lat: m.lat, lng: m.lng }}
+                yAnchor={0}
+              >
                 <div className="w-64 rounded-lg bg-white shadow-lg overflow-hidden">
                   {/* ✅ 종류별로 다른 내용 렌더 */}
                   {mapData.kind !== "bus" ? (
                     <div className="p-2">
                       <div className="flex justify-start items-end gap-1">
-                        <div className="font-bold text-base truncate">{m.title}</div>
-                        <div className="px-1 text-gray-500 text-sm truncate">{m.industry}</div>
+                        <div
+                          className="font-semibold text-black text-base truncate"
+                          title={m.title} // 툴팁 표시
+                        >
+                          {m.title}
+                        </div>
+                        <div
+                          className="px-1 py-0.5 text-gray-600 text-sm truncate"
+                          title={m.industry} // 툴팁 표시
+                        >
+                          [ {m.industry} ]
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-600 truncate">{m.address}</div>
-                      
+                      <div
+                        className="text-xs text-gray-600 truncate"
+                        title={m.address} // 툴팁 표시
+                      >
+                        · {m.address}
+                      </div>
                     </div>
                   ) : (
                     <div className="p-2">
-                      <div className="font-bold text-base truncate">
-                        {m.meta?.plainNo ? `버스: ${m.meta.plainNo}` : null}
+                      <div className="font-bold text-black text-base truncate">
+                        {m.meta?.plainNo ? `🚌 버스: ${m.meta.plainNo}` : null}
                       </div>
                       <div className="text-xs text-gray-600">
-                        {m.meta?.busType ? `유형: ${m.meta.busType}` : null}
+                        {m.meta?.busType ? `· 유형: ${m.meta.busType}` : null}
                       </div>
                       <div className="text-xs text-gray-600">
-                        {m.meta?.congetion ? `혼잡도: ${m.meta.congetion}` : null}
+                        {m.meta?.congetion
+                          ? `· 혼잡도: ${m.meta.congetion}`
+                          : null}
                       </div>
                       <div className="text-xs text-gray-600">
-                        {m.meta?.dataTm ? `수신: ${formatDataTm(m.meta.dataTm)}` : null}
+                        {m.meta?.dataTm
+                          ? `· 수신: ${formatDataTm(m.meta.dataTm)}`
+                          : null}
                       </div>
                     </div>
                   )}

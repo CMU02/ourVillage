@@ -168,7 +168,7 @@ export default function Chat() {
         <div className="flex flex-col gap-1">
           <div className="flex justify-end">
             <div
-              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-[#57EA97] text-white rounded-[5px] text-sm`}
+              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-[#1dcc69] text-white rounded-[5px] text-sm`}
             >
               {lastUser}
             </div>
@@ -202,7 +202,7 @@ export default function Chat() {
         <div className="flex flex-col gap-1">
           <div className="flex justify-end">
             <div
-              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-[#57EA97] text-white rounded-[5px] text-sm`}
+              className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line bg-[#1dcc69] text-white rounded-[5px] text-sm`}
             >
               {lastUser}
             </div>
@@ -250,7 +250,7 @@ export default function Chat() {
             <div
               className={`max-w-[70%] px-3 py-2 drop-shadow whitespace-pre-line text-sm ${
                 m.role === "user"
-                  ? "bg-[#57EA97] text-white rounded-[5px]"
+                  ? "bg-[#1dcc69] text-white rounded-[5px]"
                   : "bg-gray-200 text-black rounded-[5px]"
               }`}
             >

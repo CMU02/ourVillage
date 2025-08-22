@@ -15,14 +15,12 @@ export const useWeather = (params: WeatherParams | null) => {
     queryFn: async () => {
       if (!params) throw new Error("날씨 매개변수가 없습니다");
       
-      console.log("날씨 API 호출:", params);
       const data = await getUltraShortForecast(
         params.nx,
         params.ny,
         params.baseDate,
         params.baseTime
       );
-      console.log("날씨 API 응답:", data);
       return data.response.body.items.item as UltraShortItem[];
     },
     enabled: !!params, // params가 있을 때만 쿼리 실행

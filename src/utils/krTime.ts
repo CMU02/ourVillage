@@ -43,7 +43,7 @@ export function buildForecastBase(nx: string, ny: string) {
     }
 
     // 디버그
-    // console.log({ nx, ny, baseDate, baseTime });
+    // console.log('buildForecastBase result:', { nx, ny, baseDate, baseTime, currentTime: `${hour}:${minute}` });
 
     return { nx, ny, baseDate, baseTime };
 } 

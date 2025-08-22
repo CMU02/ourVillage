@@ -42,10 +42,29 @@ export default function Header() {
 
   const getClosestItme = (item: UltraShortItem[]) => {
     const kstParts = getKstParts(new Date());
-    const krTime = Number(`${kstParts.hour}${kstParts.minute}`);
+    const krTime = Number(`${kstParts.hour.padStart(2, '0')}${kstParts.minute.padStart(2, '0')}`);
 
-    return item.filter((i) => Number(i.fcstTime) <= krTime)
-      .sort((a, b) => Number(b.fcstTime) - Number(a.fcstTime))[0];
+    // console.log('getClosestItme Debug:', {
+    //   krTime,
+    //   itemCount: item.length,
+    //   fcstTimes: item.map(i => i.fcstTime),
+    //   filteredItems: item.filter((i) => Number(i.fcstTime) <= krTime)
+    // });
+
+    const filteredItems = item.filter((i) => Number(i.fcstTime) <= krTime);
+
+    if (filteredItems.length === 0) {
+      // console.log('No items found <= current time, returning earliest future item');
+      // 현재 시간보다 이후의 데이터만 있다면 가장 이른 시간의 데이터 반환
+      const earliestItem = item.sort((a, b) => Number(a.fcstTime) - Number(b.fcstTime))[0];
+      // console.log('Selected earliest future item:', earliestItem);
+      return earliestItem;
+    }
+
+    const result = filteredItems.sort((a, b) => Number(b.fcstTime) - Number(a.fcstTime))[0];
+    // console.log('Selected item:', result);
+
+    return result;
   }
 
   // 온도 표시 로직

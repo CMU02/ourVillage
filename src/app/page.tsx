@@ -2,7 +2,7 @@
 
 import Footer from "@/components/footer";
 import Modal from "@/components/modal";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Body from "../components/body";
 import Header from "../components/header";
 
@@ -38,11 +38,15 @@ function MainContainer() {
 export default function Home() {
   // ✅ villageCheck: true면 모달 숨김, false면 모달 표시
   // localStorage에 userLocation이 없을 때만 false로 시작
-  const [villageCheck, setVillageCheck] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true; // SSR 안전
+  const [villageCheck, setVillageCheck] = useState<boolean>(true); // 초기값은 항상 true로 설정
+  const [isClient, setIsClient] = useState(false);
+
+  // 클라이언트에서만 localStorage 확인
+  useEffect(() => {
+    setIsClient(true);
     const saved = localStorage.getItem("userLocation");
-    return !!saved; // 값이 있으면 true(모달 숨김), 없으면 false(모달 표시)
-  });
+    setVillageCheck(!!saved);
+  }, []);
 
   const rootClass = useMemo(
     () =>
@@ -63,9 +67,9 @@ export default function Home() {
 
               <MainContainer />
 
-            <footer className="sticky bottom-0 z-20">
-              <FooterContainer />
-            </footer>
+              <footer className="sticky bottom-0 z-20">
+                <FooterContainer />
+              </footer>
 
               {/* villageCheck가 false일 때 전체 화면을 덮는 오버레이 */}
               {!villageCheck && (
